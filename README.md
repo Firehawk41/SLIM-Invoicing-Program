@@ -1,37 +1,46 @@
-# SLIM-Invoicing-Program
-Invoicing Program for a laboratory across various iterations
+# SLIM Invoice System
 
-## Quick Start
+A laboratory invoicing automation system built across four iterations over several years — each version a direct response to a concrete limitation in the one before it.
 
-To understand the architecture:
-1. Read this file (you're here)
-2. Look at `V3/README.md` for the full design narrative
-3. Browse `VBA_Codebase_Reference_V3.md` for class-by-class details
+The progression from a single procedural module to a fully layered Python application with 355 tests isn't academic. Every architectural decision in the final version was motivated by something that could be done better.
 
-To run the system (requires Excel, VBA, Access database):
-1. Open the workbook
-2. Run `CreateInvoice()` macro
-3. Select invoice mode (Individual file or Batch date range)
-4. CSV is written to the configured output path
+---
+
+## The Short Version
+
+V1 worked. V2 introduced classes but coupled them to the output format — when the output requirement changed in production, the refactor was substantial. V3 fixed that with proper separation of concerns. V4 ports the proven architecture to Python, replacing VBA ceremony with modern idioms without redesigning anything that was already right.
+
+---
+
+## What It Does
+
+Reads completed testing-request Excel forms submitted by lab customers, matches the requested analyses against quoted prices in a database, and writes a CSV of sales orders ready for import into accounting software.
+
+---
+
+## Navigating This Repo
+
+| Path | What's there |
+|---|---|
+| `V1/` | Procedural VBA — the starting point |
+| `V2/` | Class-based VBA — introduced structure, exposed the coupling problem |
+| `V3/` | Production VBA — clean domain/pipeline separation, tested against real data |
+| `V4/` | Python port — SQLAlchemy, Pydantic, Click, 355 tests, end-to-end validated |
+
+Start with `V4/README.md` for the full architecture and design narrative. The earlier versions are there to show the reasoning, not as reference implementations.
+
+---
 
 ## Key Design Principles
 
-- **Domain objects are shaped by their domain, not their output format**
-- **Separation of concerns**: domain layer, pipeline layer, UI layer are independent
-- **Single Responsibility**: each class does one thing well
-- **Defensive programming**: all public methods validate preconditions
-- **Testability**: services and repositories have clean contracts with no hidden dependencies
+- **Domain objects are shaped by their domain, not their output format** — the limitation that motivated V3
+- **Separation of concerns** — domain layer, pipeline layer, and UI layer are independent
+- **Single responsibility** — each class does one thing
+- **Composition root** — all dependencies constructed once and injected; nothing self-constructs
+- **Testability** — services and repositories have clean contracts with no hidden dependencies
 
-## V4 — Why Port to Python?
+---
 
-The VBA patterns work but have ceremony:
-- Manual SQL instead of SQLAlchemy ORM
-- Dict-based hydration instead of dataclasses/Pydantic
-- Single-init guards instead of constructor idioms
-- Manual transaction management instead of session contexts
+## Technical Stack (V4)
 
-The V4 port will keep the architecture (domain layer, service layer, composition root, pipeline separation) and dissolve the ceremony into Python idioms. The goal is to show that good architecture transcends language.
-
-## Contact / Questions
-
-This is a portfolio project. The code is complete and tested end-to-end. For technical deep dives, see `V3/README.md`.
+Python 3.11 · SQLAlchemy · Pydantic · Click · pytest · SQLite (dev) · PostgreSQL (prod target)
