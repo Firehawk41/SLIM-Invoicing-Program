@@ -1,10 +1,10 @@
-# LabPlus Invoice System — V1
+# SLIM Invoice System — V1
 
 A procedural VBA prototype that replaced a fully manual Word-based invoicing
 process at a laboratory LIMS. The first working version of a system that
 would be rebuilt twice before reaching its current architecture.
 
----
+\---
 
 ## The Problem It Solved
 
@@ -16,7 +16,7 @@ it could be done.
 
 V1 proved it could.
 
----
+\---
 
 ## How It Worked
 
@@ -28,7 +28,7 @@ learned and was keen to apply. The approach was:
 
 It worked. Significantly faster and more accurate than manual entry.
 
----
+\---
 
 ## Where It Broke Down
 
@@ -41,7 +41,7 @@ That worked too — but the cost was visible immediately. Any modification
 required disentangling the loops and forks before touching the actual logic.
 The code had no seams.
 
----
+\---
 
 ## Code Example
 
@@ -54,24 +54,24 @@ Next i
 ' Direct output to Word — no separation from calculation
 Set doc = CreateObject("Word.Application")
 doc.Documents.Add
-doc.Content.Text = "Invoice Total: " & InvoiceTotal
+doc.Content.Text = "Invoice Total: " \& InvoiceTotal
 ```
 
 Any change to the output format required touching the same code that
 calculated the totals. There was no boundary between the two concerns.
 
----
+\---
 
 ## Characteristics
 
-- **Procedural** — loops and arrays handled all data processing
-- **Output-coupled** — arrays were shaped around what the Word document needed
-- **No separation of concerns** — data loading, calculation, and output lived
-  in the same place
-- **Fragile to change** — adding the special-case customer format required
-  forking core logic rather than extending it
+* **Procedural** — loops and arrays handled all data processing
+* **Output-coupled** — arrays were shaped around what the Word document needed
+* **No separation of concerns** — data loading, calculation, and output lived
+in the same place
+* **Fragile to change** — adding the special-case customer format required
+forking core logic rather than extending it
 
----
+\---
 
 ## What It Led To
 
@@ -81,3 +81,4 @@ something felt every time a change came in.
 
 V2 introduced classes to address this. That turned out to be necessary but
 not sufficient. See the [V2 README](../V2/README.md) for what happened next.
+

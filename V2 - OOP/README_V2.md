@@ -1,10 +1,10 @@
-# LabPlus Invoice System — V2
+# SLIM Invoice System — V2
 
 A class-based VBA invoice system supporting three distinct invoice formats
 via a shared base class and interface. A meaningful step forward from V1 —
 and the version whose failure directly motivated V3.
 
----
+\---
 
 ## What Changed From V1
 
@@ -22,7 +22,7 @@ This was the right instinct. Extracting shared behaviour into a base class
 variants — all sound design moves. The system worked well and handled
 real production load.
 
----
+\---
 
 ## The Interface
 
@@ -35,12 +35,12 @@ Public Property Get WordInvoice() As Word.Document
 End Property
 Public Property Get FileName() As String
 End Property
-Public Sub Initialize(Submissions As Collection, SequenceNumber As Long, _
-    Logger As clsLoggingSystem, AccessDB As clsAccessDatabase, _
-    Factory As clsInvoiceFactory, PricingRetriever As clsInvoicePriceRetriever, _
+Public Sub Initialize(Submissions As Collection, SequenceNumber As Long, \_
+    Logger As clsLoggingSystem, AccessDB As clsAccessDatabase, \_
+    Factory As clsInvoiceFactory, PricingRetriever As clsInvoicePriceRetriever, \_
     SLIMDict As clsSLIMDictionaryManager)
 End Sub
-Public Sub CreateWordInvoice(WordApp As Word.Application, _
+Public Sub CreateWordInvoice(WordApp As Word.Application, \_
     InvoiceWriter As clsInvoiceWriter)
 End Sub
 Public Sub AddInvoiceToDatabase()
@@ -51,7 +51,7 @@ The problem is visible in the interface itself: `WordInvoice As Word.Document`
 is part of the contract. Word output wasn't an implementation detail — it was
 baked into the definition of what an invoice *was*.
 
----
+\---
 
 ## Where It Broke Down
 
@@ -68,19 +68,19 @@ There were no pure domains. Business logic was distributed across the class
 tree with no clear layer boundaries, which made the required changes harder
 than they needed to be.
 
----
+\---
 
 ## Characteristics
 
-- **Interface-based** — `IInvoice` implemented by three format-specific classes
-- **Shared base class** — `clsInvoiceBase` extracted common logic (DRY)
-- **Output-coupled** — `Word.Document` embedded in the interface contract
-- **No layer separation** — pricing, customer, and output logic interleaved
-  throughout the class tree
-- **Fragile to output change** — swapping the writer required refactoring
-  the domain
+* **Interface-based** — `IInvoice` implemented by three format-specific classes
+* **Shared base class** — `clsInvoiceBase` extracted common logic (DRY)
+* **Output-coupled** — `Word.Document` embedded in the interface contract
+* **No layer separation** — pricing, customer, and output logic interleaved
+throughout the class tree
+* **Fragile to output change** — swapping the writer required refactoring
+the domain
 
----
+\---
 
 ## What It Led To
 
@@ -95,3 +95,4 @@ natural limit of applying OOP without yet having the vocabulary for
 separation of concerns. V3 is the direct response to that experience.
 
 See the [V3 README](../V3/README.md) for the architecture that replaced it.
+

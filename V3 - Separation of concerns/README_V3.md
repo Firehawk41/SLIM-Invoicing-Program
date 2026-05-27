@@ -1,4 +1,4 @@
-# LabPlus Invoice System — V3
+# SLIM Invoice System — V3
 
 A VBA/Excel automation system that reads completed lab testing-request forms,
 matches requested analyses against quoted prices in an Access database, and
@@ -6,12 +6,16 @@ writes a CSV of sales orders ready for import into accounting software.
 
 Built and tested against real production data at a laboratory LIMS.
 
+> **This is the V3 reference implementation.** V4 (Python port) is complete
+> and is the current version. See `V4/README.md` for the full architecture
+> and design narrative.
+
 ---
 
 ## Why This Exists — The Design Progression
 
 This is the third iteration of the same system. Each version is a direct
-response to a concrete failure in the one before it.
+response to a concrete limitation in the one before it.
 
 **V1 — Procedural**
 A single module: loops, arrays, no structure. Functional, but every new
@@ -22,7 +26,7 @@ touching the whole file.
 Introduced classes, but invoice objects were shaped around their output
 format (Word). When the output requirement changed to CSV in production,
 the refactor was substantial — the domain objects had no independence from
-the writer. This is the failure that motivated V3.
+the writer. This is the limitation that motivated V3.
 
 **V3 — This Codebase**
 Clean separation between domain objects and output. The CSV writer is a
@@ -30,11 +34,12 @@ thin adapter that reads from domain objects — it has no influence on their
 structure. Swapping to a new output format (Excel, PDF, API) requires only
 a new writer class. The domain layer doesn't change.
 
-**V4 — Planned Python Port**
+**V4 — Python Port (complete)**
 The architecture ports directly. Domain layer, service layer, composition
 root, and pipeline separation all survive the language change. The VBA
 ceremony (single-init guards, dict hydration, manual SQL) dissolves into
-Python idioms — SQLAlchemy, dataclasses, Pydantic.
+Python idioms — SQLAlchemy, Pydantic, Click. 355 tests, end-to-end
+validated. See `V4/README.md`.
 
 ---
 
@@ -67,21 +72,21 @@ Submission Parsing → Pricing → Line Item Building → SO Building → Persis
 
 Key pipeline stages:
 
-- **`clsInvoiceSubmissionManager`** — scans a folder of `.xlsx` submission
+* **`clsInvoiceSubmissionManager`** — scans a folder of `.xlsx` submission
   forms, validates filenames, filters by date range, builds submission objects
-- **`clsSalesOrderPricingEngine`** — groups samples by analysis set and
+* **`clsSalesOrderPricingEngine`** — groups samples by analysis set and
   processing time, matches against customer-specific or default quotes,
   merges identical line items by `QuotePriceID`
-- **`clsSalesOrderBuilder`** — coordinates the line item builder and service,
+* **`clsSalesOrderBuilder`** — coordinates the line item builder and service,
   constructs `clsSalesOrder` entities ready for persistence
-- **`clsSalesOrderWriterCSV`** — thin output adapter; reads only from public
+* **`clsSalesOrderWriterCSV`** — thin output adapter; reads only from public
   properties on domain objects, writes the CSV file
 
 ### Shared Infrastructure
 
-- **`clsAccessDatabase`** — ADODB wrapper, injected everywhere
-- **`clsLoggingSystem`** — structured logger, injected everywhere
-- **`modInvoiceSystem`** — composition root; all services constructed once
+* **`clsAccessDatabase`** — ADODB wrapper, injected everywhere
+* **`clsLoggingSystem`** — structured logger, injected everywhere
+* **`modInvoiceSystem`** — composition root; all services constructed once
   and injected, no business logic
 
 ---
@@ -122,7 +127,7 @@ sole location where form field strings are resolved to domain objects.
 Domain services have no awareness of the UI.
 
 **`modConfig` excluded from source control.** Sensitive paths live in
-`modConfig.bas`, which is `.gitignore`d. `modConfig.template.bas` documents
+`modConfig.bas`, which is `.gitignored`. `modConfig.template.bas` documents
 the required constants with placeholder values.
 
 ---
