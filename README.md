@@ -1,6 +1,6 @@
 # SLIM Invoice System
 
-A laboratory invoicing automation system built across four iterations over several years — each version a direct response to a concrete limitation in the one before it.
+A laboratory invoicing automation system built across five iterations over several years — each version a direct response to a concrete limitation in the one before it.
 
 The progression from a single procedural module to a fully layered Python application with 355 tests isn't academic. Every architectural decision in the final version was motivated by something that could be done better.
 
@@ -8,7 +8,7 @@ The progression from a single procedural module to a fully layered Python applic
 
 ## The Short Version
 
-V1 worked. V2 introduced classes but coupled them to the output format — when the output requirement changed in production, the refactor was substantial. V3 fixed that with proper separation of concerns. V4 ports the proven architecture to Python, replacing VBA ceremony with modern idioms without redesigning anything that was already right.
+V1 worked. V2 introduced classes but coupled them to the output format — when the output requirement changed in production, the refactor was substantial. V3 fixed that with proper separation of concerns. V4 ports the proven architecture to Python, replacing VBA ceremony with modern idioms without redesigning anything that was already right. V5 moves it inside the LIMS: no more forms on disk or copied reference data, and it bills only what was reported.
 
 ---
 
@@ -26,6 +26,7 @@ Reads completed testing-request Excel forms submitted by lab customers, matches 
 | `V2/` | Class-based VBA — introduced structure, exposed the coupling problem |
 | `V3/` | Production VBA — clean domain/pipeline separation, tested against real data |
 | `V4/` | Python port — SQLAlchemy, Pydantic, Click, 355 tests, end-to-end validated |
+| `V5-LIMS-Module/` | A module of the SLIM LIMS — bills what was reported, straight from the LIMS, once |
 
 Start with `V4/README.md` for the full architecture and design narrative. The earlier versions are there to show the reasoning, not as reference implementations.
 
