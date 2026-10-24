@@ -13,9 +13,11 @@ straight from the LIMS, instead of reading Excel forms off a shared drive.
 | A CLI run over a folder of files | A library: the host calls `invoice()` in its own transaction and moves the TR to invoiced in the same one |
 | Nothing stopped a TR being billed twice | One sales order per TR, enforced by the service and by a unique key |
 
-Ported unchanged in behaviour: quotes (customer quotes first, then defaults; widest line first, so a
-bundle beats its parts; bulk price from the line's minimum), the pricing engine, and the accounting CSV
-with V4's columns.
+| Bulk price decided per group, before same-price groups merged into one line | Bulk price on the merged line's quantity (D-84) |
+| Bundle first, always | The customer pays the lowest total: a bundle when it's cheaper than its parts, the parts when they are (D-84) |
+
+Ported unchanged: quotes (the customer's own quotes first, defaults only for what they don't price),
+merging same-price groups into one line, and the accounting CSV with V4's columns.
 
 ## Use (from the host)
 
