@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "slim-invoicing"
+version = "5.0.0"
+description = "SLIM invoicing V5: bills what the LIMS reported, priced from quotes"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.6,<3.0",
+    "sqlalchemy>=2.0,<3.0",
+    "alembic>=1.13",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6", "psycopg2-binary>=2.9"]
+
+[tool.setuptools.packages.find]
+include = ["slim_invoicing*"]
+
+[tool.setuptools.package-data]
+slim_invoicing = ["persistence/alembic.ini", "persistence/migrations/**/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = ["*.md"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]

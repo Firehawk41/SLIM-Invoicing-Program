@@ -1,0 +1,41 @@
+name: V5
+
+on:
+  push:
+    paths: ["V5-LIMS-Module/**", ".github/workflows/v5.yml"]
+  pull_request:
+    paths: ["V5-LIMS-Module/**", ".github/workflows/v5.yml"]
+
+defaults:
+  run:
+    working-directory: V5-LIMS-Module
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12"]
+        db: [sqlite, postgres]
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install -e ".[dev]"
+      - run: ruff check . && ruff format --check .
+      - name: pytest
+        run: |
+          if [ "${{ matrix.db }}" = postgres ]; then
+            export TEST_DATABASE_URL=postgresql+psycopg2://postgres:postgres@localhost:5432/postgres
+          fi
+          pytest -q
