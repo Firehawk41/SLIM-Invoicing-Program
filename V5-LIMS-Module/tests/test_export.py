@@ -30,3 +30,19 @@ def test_one_row_per_line_item(session):
         "2026-10-23",
         "TR00042",
     ]
+
+
+def test_a_formula_from_the_request_form_is_written_as_text(session):  # slim-data D-118
+    from slim_invoicing.export import as_text
+
+    save_quote(session, CUSTOMER)
+    save_quote(session, DEFAULTS)
+    forged = request(sample(1, ELEMENTS)).model_copy(
+        update={"requester_name": '=HYPERLINK("http://x","x")', "po_number": "@SUM(1)"}
+    )
+    out = io.StringIO()
+    write_csv([invoice(session, forged, "SUE", on=TODAY)], out)
+    row = list(csv.reader(io.StringIO(out.getvalue())))[1]
+    assert row[HEADERS.index("Name of Requester")] == '\'=HYPERLINK("http://x","x")'
+    assert row[HEADERS.index("PO Number")] == "'@SUM(1)"
+    assert as_text("-12.50") == "-12.50" and as_text("-x") == "'-x" and as_text(3) == 3
