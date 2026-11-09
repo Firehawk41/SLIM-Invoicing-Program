@@ -6,7 +6,16 @@ from decimal import Decimal
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from slim_invoicing import InvoiceRefused, invoice, sales_order_for, sales_orders, save_quote
+from slim_invoicing import (
+    InvoiceRefused,
+    Quote,
+    WithdrawalRefused,
+    invoice,
+    sales_order_for,
+    sales_orders,
+    save_quote,
+    withdraw_quote,
+)
 from slim_invoicing.persistence.repositories import default_quotes, quotes_for_customer, save_sales_order
 from tests.factories import ACME, ANIONS, ELEMENTS, FIVE, ND, PH, TODAY, line, quote, request, sample
 from tests.test_pricing import CUSTOMER, DEFAULTS
@@ -70,3 +79,39 @@ def test_a_quote_needs_customers_unless_it_is_a_default():
         quote(line(PH, prices=[(ND, "1", None)]))
     with pytest.raises(ValueError, match="expire before"):
         quote(line(PH, prices=[(ND, "1", None)]), default=True, start=date(2027, 1, 1), end=date(2026, 1, 1))
+
+
+def test_a_withdrawn_quote_prices_nothing_from_its_day(quoted):
+    """D-139: a row added, the quote untouched; the defaults price what it priced."""
+    [mine] = quotes_for_customer(quoted, ACME)
+    tomorrow = date.fromordinal(TODAY.toordinal() + 1)
+    withdrawn = withdraw_quote(quoted, mine.id, tomorrow, "SUE", "replaced")
+    assert withdrawn.withdrawn_from == tomorrow and withdrawn.expire_date == mine.expire_date
+    assert withdrawn.valid_on(TODAY) and not withdrawn.valid_on(tomorrow)
+    both = request(sample(1, ELEMENTS, ANIONS))
+    assert invoice(quoted, both, "SUE", on=TODAY).payment_terms == 45  # still in force today
+    later = request(sample(1, ELEMENTS, ANIONS), tr="TR00043")
+    assert invoice(quoted, later, "SUE", on=tomorrow).payment_terms == 30  # the defaults priced it
+
+
+def test_what_cant_be_withdrawn_is_refused(quoted):
+    [mine] = quotes_for_customer(quoted, ACME)
+    for day, message in (
+        (date(2025, 12, 31), "takes effect on"),
+        (date(2028, 1, 1), "expires on"),
+    ):
+        with pytest.raises(WithdrawalRefused, match=message):
+            withdraw_quote(quoted, mine.id, day, "SUE")
+    with pytest.raises(WithdrawalRefused, match="no quote 999"):
+        withdraw_quote(quoted, 999, TODAY, "SUE")
+    withdraw_quote(quoted, mine.id, TODAY, "SUE")
+    with pytest.raises(WithdrawalRefused, match="was withdrawn from"):
+        withdraw_quote(quoted, mine.id, TODAY, "SUE")
+
+
+def test_a_quote_cant_be_withdrawn_before_it_starts():
+    with pytest.raises(ValueError, match="withdrawn before it takes effect"):
+        Quote.model_validate(
+            quote(line(PH, prices=[(ND, "1", None)]), customers=(ACME,), start=TODAY).model_dump()
+            | {"withdrawn_from": date(2020, 1, 1)}
+        )

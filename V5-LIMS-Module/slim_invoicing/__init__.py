@@ -9,7 +9,13 @@ from slim_invoicing.domain.enums import PaymentMethod, ProcessingTime
 from slim_invoicing.domain.quote import Quote, QuoteLineItem, QuotePrice
 from slim_invoicing.domain.sales_order import SalesOrder, SalesOrderLineItem
 from slim_invoicing.export import write_csv
-from slim_invoicing.persistence.repositories import sales_order_for, sales_orders, save_quote
+from slim_invoicing.persistence.repositories import (
+    WithdrawalRefused,
+    sales_order_for,
+    sales_orders,
+    save_quote,
+    withdraw_quote,
+)
 from slim_invoicing.service import InvoiceRefused, invoice
 
 __all__ = [
@@ -23,9 +29,11 @@ __all__ = [
     "QuotePrice",
     "SalesOrder",
     "SalesOrderLineItem",
+    "WithdrawalRefused",
     "invoice",
     "sales_order_for",
     "sales_orders",
     "save_quote",
+    "withdraw_quote",
     "write_csv",
 ]

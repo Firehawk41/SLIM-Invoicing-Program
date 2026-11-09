@@ -33,6 +33,9 @@ write_csv([order], file)                     # the accounting import file
 
 Only a TR with a complete report is invoiced. Invoicing flushes; the host commits.
 
+Quotes are never edited. One is retired early with `withdraw_quote(session, quote_id, from_date, by, reason)`:
+a row added (`inv_quote_withdrawals`, one per quote), and from that day the quote prices nothing (D-139).
+
 ## Layout
 
 ```
@@ -52,4 +55,4 @@ pytest                                        # SQLite; TEST_DATABASE_URL=postgr
 ruff check . && ruff format --check .
 ```
 
-Decisions: slim-data-oss `docs/DECISIONS.md` D-43, D-83.
+Decisions: slim-data-oss `docs/DECISIONS.md` D-43, D-83, D-139.

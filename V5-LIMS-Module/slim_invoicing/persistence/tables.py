@@ -38,6 +38,18 @@ quotes = Table(
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
 )
 
+# A quote withdrawn before its expiry (D-139): a row added, the quote itself never edited. It prices
+# nothing from `from_date` on. One per quote.
+quote_withdrawals = Table(
+    "inv_quote_withdrawals",
+    metadata,
+    Column("quote_id", Integer, ForeignKey("inv_quotes.id"), primary_key=True),
+    Column("from_date", Date, nullable=False),
+    Column("withdrawn_by", String(100), nullable=False),
+    Column("reason", Text, nullable=False, default=""),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+)
+
 quote_customers = Table(
     "inv_quote_customers",
     metadata,

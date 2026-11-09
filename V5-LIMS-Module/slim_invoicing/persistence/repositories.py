@@ -1,5 +1,6 @@
 """Quotes and sales orders in and out of the database. Repositories flush; the host commits."""
 
+from datetime import date
 from decimal import Decimal
 
 from sqlalchemy import insert, select
@@ -43,6 +44,33 @@ def save_quote(session: Session, quote: Quote) -> Quote:
                     bulk_price=p.bulk_price,
                 )
             )
+    session.flush()
+    return _load_quotes(session, [quote_id])[0]
+
+
+class WithdrawalRefused(ValueError):
+    """The quote can't be withdrawn as asked; the message says why."""
+
+
+def withdraw_quote(session: Session, quote_id: int, from_date: date, withdrawn_by: str, reason: str = "") -> Quote:
+    """Withdraws a quote before its expiry (D-139): a row added, the quote untouched. From `from_date` on
+    it prices nothing. Refused for an unknown quote, one already withdrawn, a day before it takes effect,
+    or a day after it expires (nothing left to withdraw). Flushes."""
+    found = _load_quotes(session, [quote_id])
+    if not found:
+        raise WithdrawalRefused(f"no quote {quote_id}")
+    quote = found[0]
+    if quote.withdrawn_from is not None:
+        raise WithdrawalRefused(f"quote {quote_id} was withdrawn from {quote.withdrawn_from}")
+    if from_date < quote.effective_date:
+        raise WithdrawalRefused(f"quote {quote_id} takes effect on {quote.effective_date}: withdraw it from then")
+    if from_date > quote.expire_date:
+        raise WithdrawalRefused(f"quote {quote_id} expires on {quote.expire_date}, before {from_date}")
+    session.execute(
+        insert(t.quote_withdrawals).values(
+            quote_id=quote_id, from_date=from_date, withdrawn_by=withdrawn_by, reason=reason
+        )
+    )
     session.flush()
     return _load_quotes(session, [quote_id])[0]
 
@@ -95,6 +123,10 @@ def _load_quotes(session: Session, ids: list[int]) -> list[Quote]:
                 prices=tuple(prices.get(line.id, ())),
             )
         )
+    withdrawn = {
+        row.quote_id: row.from_date
+        for row in session.execute(select(t.quote_withdrawals).where(t.quote_withdrawals.c.quote_id.in_(ids)))
+    }
     rows = session.execute(select(t.quotes).where(t.quotes.c.id.in_(ids)).order_by(t.quotes.c.id))
     return [
         Quote(
@@ -108,6 +140,7 @@ def _load_quotes(session: Session, ids: list[int]) -> list[Quote]:
             line_items=tuple(by_quote[row.id]),
             created_by=row.created_by,
             comments=row.comments,
+            withdrawn_from=withdrawn.get(row.id),
         )
         for row in rows
     ]
