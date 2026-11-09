@@ -43,6 +43,7 @@ class Quote(_Frozen):
     line_items: tuple[QuoteLineItem, ...] = Field(min_length=1)
     created_by: str = Field(min_length=1)
     comments: str = ""
+    withdrawn_from: date | None = None  # D-139: withdrawn before its expiry; prices nothing from this day
 
     @model_validator(mode="after")
     def _check(self) -> "Quote":
@@ -50,9 +51,13 @@ class Quote(_Frozen):
             raise ValueError("a quote can't expire before it takes effect")
         if not self.is_default and not self.customer_ids:
             raise ValueError("a customer quote needs at least one customer")
+        if self.withdrawn_from is not None and self.withdrawn_from < self.effective_date:
+            raise ValueError("a quote can't be withdrawn before it takes effect")
         return self
 
     def valid_on(self, day: date) -> bool:
+        if self.withdrawn_from is not None and day >= self.withdrawn_from:
+            return False
         return self.effective_date <= day <= self.expire_date
 
     @property
