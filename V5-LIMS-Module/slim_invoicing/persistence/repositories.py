@@ -84,6 +84,16 @@ def default_quotes(session: Session) -> list[Quote]:
     return _load_quotes(session, list(session.scalars(select(t.quotes.c.id).where(t.quotes.c.is_default))))
 
 
+def all_quotes(session: Session) -> list[Quote]:
+    """Every quote, newest first: for a host's list of quotes (they're never deleted)."""
+    return list(reversed(_load_quotes(session, list(session.scalars(select(t.quotes.c.id))))))
+
+
+def get_quote(session: Session, quote_id: int) -> Quote | None:
+    found = _load_quotes(session, [quote_id])
+    return found[0] if found else None
+
+
 def _load_quotes(session: Session, ids: list[int]) -> list[Quote]:
     if not ids:
         return []

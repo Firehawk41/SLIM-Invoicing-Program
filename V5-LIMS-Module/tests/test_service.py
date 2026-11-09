@@ -10,6 +10,8 @@ from slim_invoicing import (
     InvoiceRefused,
     Quote,
     WithdrawalRefused,
+    all_quotes,
+    get_quote,
     invoice,
     sales_order_for,
     sales_orders,
@@ -115,3 +117,10 @@ def test_a_quote_cant_be_withdrawn_before_it_starts():
             quote(line(PH, prices=[(ND, "1", None)]), customers=(ACME,), start=TODAY).model_dump()
             | {"withdrawn_from": date(2020, 1, 1)}
         )
+
+
+def test_a_host_lists_every_quote_and_finds_one_without_reading_the_tables(quoted):
+    """All quotes newest first, and one by its ID (slim-lims-oss review 2026-11-09 R5)."""
+    everything = all_quotes(quoted)
+    assert [q.id for q in everything] == sorted((q.id for q in everything), reverse=True) and len(everything) == 2
+    assert get_quote(quoted, everything[0].id) == everything[0] and get_quote(quoted, 999) is None
