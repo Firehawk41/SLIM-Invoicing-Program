@@ -11,6 +11,8 @@ from slim_invoicing.domain.sales_order import SalesOrder, SalesOrderLineItem
 from slim_invoicing.export import write_csv
 from slim_invoicing.persistence.repositories import (
     WithdrawalRefused,
+    all_quotes,
+    get_quote,
     sales_order_for,
     sales_orders,
     save_quote,
@@ -30,6 +32,8 @@ __all__ = [
     "SalesOrder",
     "SalesOrderLineItem",
     "WithdrawalRefused",
+    "all_quotes",
+    "get_quote",
     "invoice",
     "sales_order_for",
     "sales_orders",

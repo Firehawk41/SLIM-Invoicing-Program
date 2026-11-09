@@ -35,6 +35,7 @@ Only a TR with a complete report is invoiced. Invoicing flushes; the host commit
 
 Quotes are never edited. One is retired early with `withdraw_quote(session, quote_id, from_date, by, reason)`:
 a row added (`inv_quote_withdrawals`, one per quote), and from that day the quote prices nothing (D-139).
+A host lists quotes with `all_quotes(session)` (newest first) and finds one with `get_quote(session, id)`.
 
 ## Layout
 
